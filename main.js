@@ -5,58 +5,66 @@ const character = {
   name: 'Pikachu',
   defaultHP: 100,
   damageHP: 100,
+  lost: false,
   elHP: document.getElementById('health-character'),
-  elProgressbar: document.getElementById('progressbar-character')
+  elProgressbar: document.getElementById('progressbar-character'),
+
+  renderHPLife () {
+    this.elHP.innerText = this.damageHP + ' / ' + this.defaultHP
+  },
+  renderProgressbarHP () {
+    this.elProgressbar.style.width = this.damageHP + '%'
+    if (this.damageHP > 60) {
+      this.elProgressbar.style.background = '#4CAF50'
+    } else if (this.damageHP > 30) {
+      this.elProgressbar.style.background = '#FF9800'
+    } else {
+      this.elProgressbar.style.background = '#F44336'
+    }
+  },
+  renderHP () {
+    this.renderHPLife()
+    this.renderProgressbarHP()
+  },
+  changeHP (count) {
+    if (this.damageHP <= count) {
+      this.damageHP = 0
+      this.renderHP()
+      if (!this.lost) {
+        alert('Бідний ' + this.name + ' програв бій!')
+        this.lost = true
+      }
+    } else {
+      this.damageHP -= count
+      this.renderHP()
+    }
+  }
 }
 
 const enemy1 = {
   name: 'Charmander',
   defaultHP: 100,
   damageHP: 100,
+  lost: false,
   elHP: document.getElementById('health-enemy1'),
-  elProgressbar: document.getElementById('progressbar-enemy1')
+  elProgressbar: document.getElementById('progressbar-enemy1'),
+  renderHPLife: character.renderHPLife,
+  renderProgressbarHP: character.renderProgressbarHP,
+  renderHP: character.renderHP,
+  changeHP: character.changeHP
 }
 
 const enemy2 = {
   name: 'Bulbasaur',
   defaultHP: 100,
   damageHP: 100,
+  lost: false,
   elHP: document.getElementById('health-enemy2'),
-  elProgressbar: document.getElementById('progressbar-enemy2')
-}
-
-function renderHPLife (person) {
-  person.elHP.innerText = person.damageHP + ' / ' + person.defaultHP
-}
-
-function renderProgressbarHP (person) {
-  person.elProgressbar.style.width = person.damageHP + '%'
-  if (person.damageHP > 60) {
-    person.elProgressbar.style.background = '#4CAF50'
-  } else if (person.damageHP > 30) {
-    person.elProgressbar.style.background = '#FF9800'
-  } else {
-    person.elProgressbar.style.background = '#F44336'
-  }
-}
-
-function renderHP (person) {
-  renderHPLife(person)
-  renderProgressbarHP(person)
-}
-
-function changeHP (count, person) {
-  if (person.damageHP <= count) {
-    person.damageHP = 0
-    renderHP(person)
-    if (!person.lost) {
-      alert('Бідний ' + person.name + ' програв бій!')
-      person.lost = true
-    }
-  } else {
-    person.damageHP -= count
-    renderHP(person)
-  }
+  elProgressbar: document.getElementById('progressbar-enemy2'),
+  renderHPLife: character.renderHPLife,
+  renderProgressbarHP: character.renderProgressbarHP,
+  renderHP: character.renderHP,
+  changeHP: character.changeHP
 }
 
 function random (num) {
@@ -64,7 +72,7 @@ function random (num) {
 }
 
 function attack (person, maxDamage) {
-  changeHP(random(maxDamage), person)
+  person.changeHP(random(maxDamage))
 }
 
 $btnKick.addEventListener('click', function () {
@@ -81,9 +89,9 @@ $btnQuick.addEventListener('click', function () {
 
 function init () {
   console.log('Start Game!')
-  renderHP(character)
-  renderHP(enemy1)
-  renderHP(enemy2)
+  character.renderHP()
+  enemy1.renderHP()
+  enemy2.renderHP()
 }
 
 init()
