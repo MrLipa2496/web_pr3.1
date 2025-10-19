@@ -2,14 +2,11 @@ const $btnKick = document.getElementById('btn-kick')
 const $btnQuick = document.getElementById('btn-quick')
 const $logs = document.getElementById('logs')
 
-function random (num) {
-  return Math.ceil(Math.random() * num)
-}
+const random = num => Math.ceil(Math.random() * num)
 
-function generateLog (firstPerson, secondPerson, damage, hpLeft, hpTotal) {
+const generateLog = (firstPerson, secondPerson, damage, hpLeft, hpTotal) => {
   const { name: name1 } = firstPerson
   const { name: name2 } = secondPerson
-
   const logs = [
     `${name1} вспомнил что-то важное, но неожиданно ${name2}, не помня себя от испуга, ударил в предплечье врага.`,
     `${name1} поперхнулся, и за это ${name2} с испугу приложил прямой удар коленом в лоб врага.`,
@@ -22,22 +19,21 @@ function generateLog (firstPerson, secondPerson, damage, hpLeft, hpTotal) {
     `${name1} расстроился, как вдруг, неожиданно ${name2} случайно влепил стопой в живот соперника.`,
     `${name1} пытался что-то сказать, но вдруг, неожиданно ${name2} со скуки разбил бровь сопернику.`
   ]
-
   const text = logs[random(logs.length) - 1]
   return `${text}  -${damage} [${hpLeft}/${hpTotal}]`
 }
 
-function renderLog (text) {
+const renderLog = text => {
   const p = document.createElement('p')
   p.innerText = text
   $logs.insertBefore(p, $logs.firstChild)
 }
 
-function createPlayer ({ name, id }) {
+const createPlayer = ({ name, id }) => {
   const elHP = document.getElementById(`health-${id}`)
   const elProgressbar = document.getElementById(`progressbar-${id}`)
 
-  const player = {
+  return {
     name,
     defaultHP: 100,
     damageHP: 100,
@@ -46,15 +42,17 @@ function createPlayer ({ name, id }) {
     elProgressbar,
 
     renderHPLife () {
-      const { damageHP, defaultHP, elHP } = this
-      elHP.innerText = `${damageHP} / ${defaultHP}`
+      this.elHP.innerText = `${this.damageHP} / ${this.defaultHP}`
     },
 
     renderProgressbarHP () {
-      const { damageHP, elProgressbar } = this
-      elProgressbar.style.width = `${damageHP}%`
-      elProgressbar.style.background =
-        damageHP > 60 ? '#4CAF50' : damageHP > 30 ? '#FF9800' : '#F44336'
+      this.elProgressbar.style.width = `${this.damageHP}%`
+      this.elProgressbar.style.background =
+        this.damageHP > 60
+          ? '#4CAF50'
+          : this.damageHP > 30
+          ? '#FF9800'
+          : '#F44336'
     },
 
     renderHP () {
@@ -63,48 +61,76 @@ function createPlayer ({ name, id }) {
     },
 
     changeHP (count, enemy) {
-      const { name, defaultHP } = this
-
       if (this.damageHP <= count) {
         this.damageHP = 0
         this.renderHP()
         if (!this.lost) {
-          alert(`Бідний ${name} програв бій!`)
-          this.llost = true
+          alert(`Бідний ${this.name} програв бій!`)
+          this.lost = true
         }
       } else {
         this.damageHP -= count
         this.renderHP()
-
-        const log = generateLog(enemy, this, count, this.damageHP, defaultHP)
+        const log = generateLog(
+          enemy,
+          this,
+          count,
+          this.damageHP,
+          this.defaultHP
+        )
         renderLog(log)
       }
     }
   }
-
-  return player
 }
 
 const character = createPlayer({ name: 'Pikachu', id: 'character' })
 const enemy1 = createPlayer({ name: 'Charmander', id: 'enemy1' })
 const enemy2 = createPlayer({ name: 'Bulbasaur', id: 'enemy2' })
 
-function attack (attacker, defender, maxDamage) {
+const attack = (attacker, defender, maxDamage) => {
   const damage = random(maxDamage)
   defender.changeHP(damage, attacker)
 }
 
+const createClickCounter = (button, maxClicks) => {
+  let clicks = 0
+  const originalText = button.innerText
+  return () => {
+    if (clicks < maxClicks) {
+      clicks++
+      console.log(`Кнопка "${originalText}": натискань ${clicks}/${maxClicks}`)
+      button.innerText = `${originalText} (${maxClicks - clicks} залишилось)`
+      if (clicks === maxClicks) {
+        button.disabled = true
+        button.style.opacity = '0.6'
+        button.innerText = `${originalText} (0 залишилось)`
+        console.log(`"${originalText}" більше не активна`)
+      }
+      return true
+    }
+    return false
+  }
+}
+
+const kickCounter = createClickCounter($btnKick, 7)
+const quickCounter = createClickCounter($btnQuick, 7)
+
 $btnKick.addEventListener('click', () => {
-  attack(character, enemy1, 20)
-  attack(character, enemy2, 20)
+  if (kickCounter()) {
+    attack(character, enemy1, 20)
+    attack(character, enemy2, 20)
+  }
 })
 
 $btnQuick.addEventListener('click', () => {
-  attack(character, enemy1, 10)
-  attack(character, enemy2, 10)
+  if (quickCounter()) {
+    attack(character, enemy1, 10)
+    attack(character, enemy2, 10)
+  }
 })
 
-function init () {
+const init = () => {
   console.log('Start Game!')
   character.renderHP()
   enemy1.renderHP()
