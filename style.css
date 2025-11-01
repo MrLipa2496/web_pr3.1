@@ -587,3 +587,10 @@ h1 {
 .action label {
   padding: 6px 0;
 }
+
+.health.low {
+  background: #ff9800;
+}
+.health.critical {
+  background: #f44336;
+}

@@ -1,4 +1,4 @@
-import { random, generateLog, renderLog } from './utils.js'
+import { generateLog } from './utils.js'
 
 export default class Pokemon {
   constructor ({ name, id }) {
@@ -8,7 +8,6 @@ export default class Pokemon {
     this.lost = false
     this.elHP = document.getElementById(`health-${id}`)
     this.elProgressbar = document.getElementById(`progressbar-${id}`)
-
     this.renderHP()
   }
 
@@ -18,12 +17,12 @@ export default class Pokemon {
 
   renderProgressbarHP () {
     this.elProgressbar.style.width = `${this.damageHP}%`
-    this.elProgressbar.style.background =
-      this.damageHP > 60
-        ? '#4CAF50'
-        : this.damageHP > 30
-        ? '#FF9800'
-        : '#F44336'
+    this.elProgressbar.classList.remove('low', 'critical')
+    if (this.damageHP < 20) {
+      this.elProgressbar.classList.add('critical')
+    } else if (this.damageHP < 60) {
+      this.elProgressbar.classList.add('low')
+    }
   }
 
   renderHP () {
@@ -32,18 +31,14 @@ export default class Pokemon {
   }
 
   changeHP (count, enemy, callback) {
-    if (this.damageHP <= count) {
-      this.damageHP = 0
-      this.renderHP()
-      if (!this.lost) {
-        alert(`Бідний ${this.name} програв бій!`)
-        this.lost = true
-      }
-    } else {
-      this.damageHP -= count
-      this.renderHP()
-      const log = generateLog(enemy, this, count, this.damageHP, this.defaultHP)
-      callback?.(log)
+    this.damageHP = Math.max(this.damageHP - count, 0)
+    this.renderHP()
+    const log = generateLog(enemy, this, count, this.damageHP, this.defaultHP)
+    callback?.(log)
+
+    if (this.damageHP === 0 && !this.lost) {
+      alert(`Бідний ${this.name} програв бій!`)
+      this.lost = true
     }
   }
 }
